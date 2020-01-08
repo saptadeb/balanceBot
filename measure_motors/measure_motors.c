@@ -51,10 +51,10 @@ int main(){
         return -1;
     }
 
-    if(rc_cpu_set_governor(RC_GOV_PERFORMANCE)<0){
-        fprintf(stderr,"Failed to set governor to PERFORMANCE\n");
-        return -1;
-    }
+//    if(rc_cpu_set_governor(RC_GOV_PERFORMANCE)<0){
+//        fprintf(stderr,"Failed to set governor to PERFORMANCE\n");
+//        return -1;
+//    }
 
     // initialize enocders
     if(rc_encoder_eqep_init()==-1){

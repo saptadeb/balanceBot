@@ -81,7 +81,7 @@ int main(int argc, char** argv){
         //run right forward for 2s
         printf("Testing RIGHT FWD\n");
         mb_motor_set(LEFT_MOTOR, 0.0);
-        if(test_motor_duty(RIGHT_MOTOR, ENC_RIGHT_POL, 0.95, 2.0) < 0){
+        if(test_motor_duty(RIGHT_MOTOR, ENC_1_POL, 0.95, 2.0) < 0){
             fprintf(stderr,"ERROR: Abnormal encoder readings on RIGHT motor. Did the motor spin ?\n");
             return -1;
         }
@@ -90,7 +90,7 @@ int main(int argc, char** argv){
 
         //run left forward for 2s
         printf("Testing LEFT FWD\n");
-        if(test_motor_duty(LEFT_MOTOR, ENC_LEFT_POL, 0.95, 2.0) < 0){
+        if(test_motor_duty(LEFT_MOTOR, ENC_2_POL, 0.95, 2.0) < 0){
             fprintf(stderr,"ERROR: Abnormal encoder readings on LEFT motor. Did the motor spin ?\n");
             return -1;
         }
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
         //run left backwards for 2s
 
         printf("Testing LEFT BKWD\n");
-        if(test_motor_duty(LEFT_MOTOR, ENC_LEFT_POL, -0.95, 2.0) < 0){
+        if(test_motor_duty(LEFT_MOTOR, ENC_2_POL, -0.95, 2.0) < 0){
             fprintf(stderr,"ERROR: Abnormal encoder readings on LEFT motor. Did the motor spin ?\n");
             return -1;
         }
@@ -109,7 +109,7 @@ int main(int argc, char** argv){
 
         //run right backwards for 2s
         printf("Testing RIGHT BKWD\n");
-        if(test_motor_duty(RIGHT_MOTOR, ENC_RIGHT_POL, -0.95, 2.0) < 0){
+        if(test_motor_duty(RIGHT_MOTOR, ENC_1_POL, -0.95, 2.0) < 0){
             fprintf(stderr,"ERROR: Abnormal encoder readings on RIGHT motor. Did the motor spin ?\n");
             return -1;
         }
@@ -173,8 +173,8 @@ int test_motor_dir(float duty, float dtime_s){
     rc_encoder_write(2, 0);
     mb_motor_set_all(duty);
     rc_nanosleep((int)(dtime_s * 1E9));
-    left_encoder = ENC_LEFT_POL * rc_encoder_read(LEFT_MOTOR);
-    right_encoder = ENC_RIGHT_POL * rc_encoder_read(RIGHT_MOTOR);
+    left_encoder = ENC_2_POL * rc_encoder_read(LEFT_MOTOR);
+    right_encoder = ENC_1_POL * rc_encoder_read(RIGHT_MOTOR);
     left_rot_speed = left_encoder *(2*M_PI) / (GEAR_RATIO * ENCODER_RES) / dtime_s;
     right_rot_speed = right_encoder *(2*M_PI) / (GEAR_RATIO * ENCODER_RES)/ dtime_s;
     printf("[ Left Rot Speed (rad/s) : %3.4f, Right Rot Speed (rad/s) : %3.4f ]\n", left_rot_speed, right_rot_speed);
