@@ -6,13 +6,13 @@
 #define MB_MOTOR_H
 
 
-// #define MDIR1_CHIP              
-// #define MDIR1_PIN                    //MDIRR1 gpio(CHIP.PIN) P9.12
-// #define MDIR2_CHIP              
-// #define MDIR2_PIN                    //MDIRR2 gpio(CHIP.PIN)
+ #define MDIR1_CHIP 1             
+ #define MDIR1_PIN  28                  //MDIRR1 gpio(CHIP.PIN) P9.12
+ #define MDIR2_CHIP 1             
+ #define MDIR2_PIN  16                  //MDIRR2 gpio(CHIP.PIN)
 #define MOT_BRAKE_EN_PIN   0,20         // gpio0.20  P9.41
-// #define MOT1_CS_PIN                  // analog in of motor 1 current sense
-// #define MOT2_CS_PIN                  // analog in of motor 2 current sense
+ #define MOT1_CS_PIN    0              // analog in of motor 1 current sense
+ #define MOT2_CS_PIN     1             // analog in of motor 2 current sense
 #define MB_MOTOR_DEFAULT_PWM_FREQ 25000
 
 //fuctions
