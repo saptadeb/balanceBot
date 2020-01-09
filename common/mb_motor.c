@@ -106,15 +106,19 @@ int mb_motor_set(int motor, double duty){
         fprintf(stderr,"ERROR: trying to rc_set_motor_all before they have been initialized\n");
         return -1;
     }
-    if(motor == 1) {
-        rc_gpio_set_value(MDIR1_CHIP,MDIR1_PIN,1);
-    }
-    rc_gpio_set_value(MDIR2_CHIP,MDIR2_PIN,1);
     if(duty < 0) {
         duty = -duty;
     }
-    rc_pwm_set_duty(1,'A',duty);
-    rc_pwm_set_duty(1,'B',duty);
+    if(motor == 1) {
+        rc_gpio_set_value(MDIR1_CHIP,MDIR1_PIN,0);
+        rc_gpio_set_value(MDIR2_CHIP,MDIR2_PIN,0);
+        rc_pwm_set_duty(1,'A',duty);
+    } else {
+        rc_gpio_set_value(MDIR1_CHIP,MDIR1_PIN,0);
+        rc_gpio_set_value(MDIR2_CHIP,MDIR2_PIN,0);
+        rc_pwm_set_duty(1,'B',duty);
+    }
+    
     return 0;
 }
 
