@@ -1,0 +1,6 @@
+[ No Load Speed (rad/s) : 49.8462, No Load Current (A) : 0.0905,  Stall Torque (N.m) : 0.4503 ]
+[ Motor Constant K : 0.2274, Shaft Friction : 0.0004,  Shaft Inertia (Kg.m^2) : 2.0661e-03 ]
+
+Got time constant
+[ No Load Speed (rad/s) : 50.5401, No Load Current (A) : 0.1011,  Stall Torque (N.m) : 0.4417 ]
+[ Motor Constant K : 0.2231, Shaft Friction : 0.0004,  Shaft Inertia (Kg.m^2) : 2.2335e-03 ]

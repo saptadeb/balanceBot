@@ -33,5 +33,7 @@
 #define DT                       0.01 // 1/sample_rate
 #define PRINTF_HZ                  10 // rate of print loop
 #define RC_CTL_HZ                  25 // rate of RC data update
+#define RESISTANCE_RIGHT		    6
+#define RESISTANCE_LEFT				6
 
 #endif

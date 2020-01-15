@@ -7,7 +7,7 @@
 * TODO: capture the gyro data and timestamps to a file to determine the period.
 *
 *******************************************************************************/
-/*#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -21,14 +21,36 @@
 #include <rc/time.h>
 #include <rc/mpu.h>
 
+static rc_mpu_data_t data;
 FILE* f1;
-*/
+#define I2C_BUS 2
+#define GPIO_INT_PIN_CHIP 3
+#define GPIO_INT_PIN_PIN  21
+
 /*******************************************************************************
 * int main() 
 *
 *******************************************************************************/
-/*int main(){
-	
+
+void writeData(void) {
+    fprintf(f1, "%5.1f, %5.1f, %5.1f, %5.1f, %5.1f, %5.1f, %6.1f, %6.1f, %6.1f\n", data.accel[0], data.accel[1], data.accel[2], 
+                                                data.gyro[0], data.gyro[1], data.gyro[2],\
+                                                data.dmp_TaitBryan[TB_PITCH_X]*RAD_TO_DEG,\
+                                                data.dmp_TaitBryan[TB_ROLL_Y]*RAD_TO_DEG,\
+                                                data.dmp_TaitBryan[TB_YAW_Z]*RAD_TO_DEG);
+    printf("%5.1f, %5.1f, %5.1f, %5.1f, %5.1f, %5.1f, %6.1f, %6.1f, %6.1f\n", data.accel[0], data.accel[1], data.accel[2], 
+                                                data.gyro[0], data.gyro[1], data.gyro[2],\
+                                                data.dmp_TaitBryan[TB_PITCH_X]*RAD_TO_DEG,\
+                                                data.dmp_TaitBryan[TB_ROLL_Y]*RAD_TO_DEG,\
+                                                data.dmp_TaitBryan[TB_YAW_Z]*RAD_TO_DEG);
+}
+
+int main(){
+	f1 = fopen("data.csv","w+");
+    if(f1 == NULL) {
+        printf("Could not open file");
+        return 1;
+    }
 	// make sure another instance isn't running
     // if return value is -3 then a background process is running with
     // higher privaledges and we couldn't kill it, in which case we should
@@ -65,17 +87,29 @@ FILE* f1;
 	// make our own safely.
 	rc_make_pid_file();
 
+    rc_mpu_config_t conf = rc_mpu_default_config();
+    conf.orient = ORIENTATION_Z_UP;
+    conf.orient = ORIENTATION_X_FORWARD; 
+    conf.i2c_bus = I2C_BUS;
+    conf.dmp_sample_rate = 100;
+    conf.gpio_interrupt_pin_chip = GPIO_INT_PIN_CHIP;
+    conf.gpio_interrupt_pin = GPIO_INT_PIN_PIN;
+    conf.dmp_fetch_accel_gyro=1;
+
+    rc_mpu_initialize_dmp(&data, conf);
+    rc_mpu_set_dmp_callback(&writeData);
 
     rc_set_state(RUNNING);
     while(rc_get_state()!=EXITING){
     	rc_nanosleep(1E9);
     }
 
+    fclose(f1);
 	// exit cleanly
 	rc_encoder_eqep_cleanup();
 	rc_remove_pid_file();   // remove pid file LAST
 	return 0;
-}*/
+}
 
 
 
@@ -98,7 +132,7 @@ FILE* f1;
  * @author     James Strawson
  * @date       1/29/2018
  */
-#include <stdio.h>
+/*#include <stdio.h>
 #include <getopt.h>
 #include <signal.h>
 #include <stdlib.h> // for atoi() and exit()
@@ -129,7 +163,7 @@ static void __print_header(void);
 /**
  * Printed if some invalid argument was given, or -h option given.
  */
-static void __print_usage(void)
+/*static void __print_usage(void)
 {
         printf("\n Options\n");
         printf("-r {rate}       Set sample rate in HZ (default 100)\n");
@@ -151,7 +185,7 @@ static void __print_usage(void)
 /**
  * This is the IMU interrupt function.
  */
-static void __print_data(void)
+/*static void __print_data(void)
 {
         printf("\r");
         printf(" ");
@@ -206,7 +240,7 @@ static void __print_data(void)
  * Based on which data is marked to be printed, print the correct labels. this
  * is printed only once and the actual data is updated on the next line.
  */
-static void __print_header(void)
+/*static void __print_header(void)
 {
         printf(" ");
         if(show_compass){
@@ -228,7 +262,7 @@ static void __print_header(void)
 /**
  * @brief      interrupt handler to catch ctrl-c
  */
-static void __signal_handler(__attribute__ ((unused)) int dummy)
+/*static void __signal_handler(__attribute__ ((unused)) int dummy)
 {
         running=0;
         return;
@@ -241,7 +275,7 @@ static void __signal_handler(__attribute__ ((unused)) int dummy)
  *
  * @return     the orientation enum chosen by user
  */
-rc_mpu_orientation_t __orientation_prompt(){
+/*rc_mpu_orientation_t __orientation_prompt(){
         int c;
         printf("\n");
         printf("Please select a number 1-6 corresponding to the\n");
@@ -303,7 +337,7 @@ rc_mpu_orientation_t __orientation_prompt(){
  *
  * @return     0 on success -1 on failure
  */
-int main(int argc, char *argv[])
+/*int main(int argc, char *argv[])
 {
         int c, sample_rate, priority;
         int show_something = 0; // set to 1 when any show data option is given.
@@ -416,4 +450,4 @@ int main(int argc, char *argv[])
         printf("\n");
         fflush(stdout);
         return 0;
-}
+}*/
