@@ -97,6 +97,7 @@ int main(){
 	rc_mpu_config_t mpu_config = rc_mpu_default_config();
 	mpu_config.dmp_sample_rate = SAMPLE_RATE_HZ;
 	mpu_config.orient = ORIENTATION_Z_UP;
+	mpu_config.orient = ORIENTATION_X_FORWARD;
 
 	// now set up the imu for dmp interrupt operation
 	if(rc_mpu_initialize_dmp(&mpu_data, mpu_config)){
@@ -172,11 +173,22 @@ void balancebot_controller(){
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
     // Update odometry 
  
+	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) \
+                                /(ENC_2_POL * GEAR_RATIO * ENCODER_RES);
+    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR \
+                                /(ENC_1_POL * GEAR_RATIO * ENCODER_RES);
+
 
     // Calculate controller outputs
-    
-    if(!mb_setpoints.manual_ctl){
-    	//send motor commands
+    mb_setpoints.theta_ref = 0.0;
+    D1.gain = D1_GAIN * V_NOMINAL/cstate.vBatt;
+    mb_state.d1_u = rc_filter_march(&D1,(mb_setpoints.theta_ref-mb_state.theta));
+    dutyL = mb_state.d1_u;
+    dutyR = mb_state.d1_u;
+
+    if(!mb_setpoints.manual_ctl){	
+        mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
+        mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
    	}
 
     if(mb_setpoints.manual_ctl){
@@ -274,3 +286,17 @@ void* printf_loop(void* ptr){
 	}
 	return NULL;
 } 
+
+
+static void* __battery_checker(__attribute__ ((unused)) void* ptr)
+{
+        double new_v;
+        while(rc_get_state()!=EXITING){
+                new_v = rc_adc_batt();
+                // if the value doesn't make sense, use nominal voltage
+                if (new_v>9.0 || new_v<5.0) new_v = V_NOMINAL; // need to change the limits in this if statement
+                cstate.vBatt = new_v;
+                rc_usleep(1000000 / BATTERY_CHECK_HZ);
+        }
+        return NULL;
+}

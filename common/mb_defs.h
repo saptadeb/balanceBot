@@ -35,5 +35,6 @@
 #define RC_CTL_HZ                  25 // rate of RC data update
 #define RESISTANCE_RIGHT		    6
 #define RESISTANCE_LEFT				6
+#define NOMINAL_V 					3.6  // need to check
 
 #endif

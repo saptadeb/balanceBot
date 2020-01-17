@@ -20,11 +20,16 @@ struct mb_state{
     float opti_yaw;
 
     //TODO: Add more variables to this state as needed
+    float wheelAngleR;
+    float wheelAngleL;
+    float d1_u;
+    float d2_u;
 };
 
 typedef struct mb_setpoints mb_setpoints_t;
 struct mb_setpoints{
 
+    float theta_ref;
     float fwd_velocity; // fwd velocity in m/s
     float turn_velocity; // turn velocity in rad/s
     int manual_ctl;
