@@ -9,6 +9,8 @@
 #ifndef MB_DEFS_H
 #define MB_DEFS_H
 
+#define CFG_PATH "pid.cfg"
+
 #define DEFAULT_PWM_FREQ        25000 // period of motor drive pwm
 #define LEFT_MOTOR                  1 // id of left motor
 #define RIGHT_MOTOR                 2 // id of right motor
@@ -35,6 +37,6 @@
 #define RC_CTL_HZ                  25 // rate of RC data update
 #define RESISTANCE_RIGHT		    6
 #define RESISTANCE_LEFT				6
-#define NOMINAL_V 					3.6  // need to check
+#define V_NOMINAL 					3.6  // need to check
 
 #endif

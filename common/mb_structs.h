@@ -23,7 +23,9 @@ struct mb_state{
     float wheelAngleR;
     float wheelAngleL;
     float d1_u;
-    float d2_u;
+    float d2_u;  //duty for outer loop
+    float d3_u;  //duty for steering
+    float vbatt;
 };
 
 typedef struct mb_setpoints mb_setpoints_t;

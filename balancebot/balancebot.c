@@ -23,6 +23,9 @@
 
 #include "balancebot.h"
 
+double kp_1, ki_1, kd_1;
+double kp_2, ki_2, kd_2;
+
 /*******************************************************************************
 * int main() 
 *
@@ -151,6 +154,15 @@ int main(){
 	return 0;
 }
 
+int load_config(){
+    FILE* file = fopen(CFG_PATH, "r");
+    if (file == NULL){
+        printf("Error opening %s\n", CFG_PATH );
+    }
+    /* TODO parse your config file here*/
+    fclose(file);
+    return 0;
+}
 
 /*******************************************************************************
 * void balancebot_controller()
@@ -173,18 +185,17 @@ void balancebot_controller(){
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
     // Update odometry 
  
-	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) \
-                                /(ENC_2_POL * GEAR_RATIO * ENCODER_RES);
-    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR \
-                                /(ENC_1_POL * GEAR_RATIO * ENCODER_RES);
+	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
+    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
 
     // Calculate controller outputs
     mb_setpoints.theta_ref = 0.0;
-    D1.gain = D1_GAIN * V_NOMINAL/cstate.vBatt;
-    mb_state.d1_u = rc_filter_march(&D1,(mb_setpoints.theta_ref-mb_state.theta));
-    dutyL = mb_state.d1_u;
-    dutyR = mb_state.d1_u;
+
+    mb_controller_update(&mb_state);
+
+    dutyL = mb_state.left_cmd;
+    dutyR = mb_state.right_cmd;
 
     if(!mb_setpoints.manual_ctl){	
         mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
@@ -208,7 +219,6 @@ void balancebot_controller(){
 	
    	//unlock state mutex
     pthread_mutex_unlock(&state_mutex);
-
 }
 
 
