@@ -8,6 +8,11 @@
 #include "mb_controller.h"
 #include "mb_defs.h"
 
+
+//global variables
+rc_filter_t D1 = RC_FILTER_INITIALIZER;
+double kp_1, ki_1, kd_1, Tf_1;
+
 /*******************************************************************************
 * int mb_controller_init()
 *
@@ -29,6 +34,8 @@ int mb_controller_init(){
         fprintf(stderr,"ERROR in rc_balance, failed to make inner-loop controller\n");
         return -1;
     }
+    printf("inner loop controller D1: \n");
+    rc_filter_print(D1);
     return 0;
 }
 
@@ -69,7 +76,7 @@ int mb_controller_load_config(){
 *
 *******************************************************************************/
 
-int mb_controller_update(mb_state_t* mb_state){
+int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
     /*TODO: Write your controller here*/
     //D1.gain = D1_GAIN * V_NOMINAL/mb_state->vBatt;
     mb_state->d1_u = rc_filter_march(&D1,(mb_setpoints->theta_ref-mb_state->theta));

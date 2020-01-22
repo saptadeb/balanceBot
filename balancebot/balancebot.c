@@ -179,23 +179,23 @@ void balancebot_controller(){
 	//lock state mutex
 	pthread_mutex_lock(&state_mutex);
 	// Read IMU
-	mb_state.theta = mpu_data.dmp_TaitBryan[TB_PITCH_X];
+	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];
 	// Read encoders
 	mb_state.left_encoder = rc_encoder_eqep_read(1);
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
     // Update odometry 
  
 	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
-    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
+    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
 
     // Calculate controller outputs
     mb_setpoints.theta_ref = 0.0;
 
-    mb_controller_update(&mb_state);
+    mb_controller_update(&mb_state, &mb_setpoints);
 
-    dutyL = mb_state.left_cmd;
-    dutyR = mb_state.right_cmd;
+    float dutyL = mb_state.left_cmd;
+    float dutyR = mb_state.right_cmd;
 
     if(!mb_setpoints.manual_ctl){	
         mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
@@ -298,7 +298,7 @@ void* printf_loop(void* ptr){
 } 
 
 
-static void* __battery_checker(__attribute__ ((unused)) void* ptr)
+/*static void* __battery_checker(__attribute__ ((unused)) void* ptr)
 {
         double new_v;
         while(rc_get_state()!=EXITING){
@@ -309,4 +309,4 @@ static void* __battery_checker(__attribute__ ((unused)) void* ptr)
                 rc_usleep(1000000 / BATTERY_CHECK_HZ);
         }
         return NULL;
-}
+}*/
