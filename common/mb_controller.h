@@ -13,6 +13,8 @@ int mb_controller_cleanup();
 
 #define DT 0.01
 #define SOFT_START_SEC 0.7
+#define THETA_REF_MAX 0.33
+#define STEERING_INPUT_MAX 0.5
 
 #endif
 

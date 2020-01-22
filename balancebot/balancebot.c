@@ -154,16 +154,6 @@ int main(){
 	return 0;
 }
 
-int load_config(){
-    FILE* file = fopen(CFG_PATH, "r");
-    if (file == NULL){
-        printf("Error opening %s\n", CFG_PATH );
-    }
-    /* TODO parse your config file here*/
-    fclose(file);
-    return 0;
-}
-
 /*******************************************************************************
 * void balancebot_controller()
 *
@@ -179,7 +169,8 @@ void balancebot_controller(){
 	//lock state mutex
 	pthread_mutex_lock(&state_mutex);
 	// Read IMU
-	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];
+	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];				//Roll corresponds to pitch and vice versa
+
 	// Read encoders
 	mb_state.left_encoder = rc_encoder_eqep_read(1);
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
@@ -188,9 +179,10 @@ void balancebot_controller(){
 	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
     mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
+    mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2) + mb_state.theta;
 
     // Calculate controller outputs
-    mb_setpoints.theta_ref = 0.0;
+    //mb_setpoints.theta_ref = 0.0;
 
     mb_controller_update(&mb_state, &mb_setpoints);
 
@@ -216,6 +208,11 @@ void balancebot_controller(){
 	mb_state.opti_pitch = -tb_array[1]; //xBee quaternion is in Z-down, need Z-up
 	mb_state.opti_yaw = -tb_array[2];   //xBee quaternion is in Z-down, need Z-up
 	
+	if (rc_get_state() == EXITING)
+	{
+		mb_motor_set(LEFT_MOTOR,0.0);
+		mb_motor_set(RIGHT_MOTOR,0.0);
+	}
 	
    	//unlock state mutex
     pthread_mutex_unlock(&state_mutex);
@@ -270,6 +267,9 @@ void* printf_loop(void* ptr){
 			printf("    X    |");
 			printf("    Y    |");
 			printf("    ψ    |");
+			printf("left_duty|");
+			printf("right_duty|");
+			printf("  gamma  |");
 
 			printf("\n");
 		}
@@ -289,6 +289,10 @@ void* printf_loop(void* ptr){
 			printf("%7.3f  |", mb_state.opti_x);
 			printf("%7.3f  |", mb_state.opti_y);
 			printf("%7.3f  |", mb_state.opti_yaw);
+			printf("%7.3f  |", mb_state.left_cmd);
+			printf("%7.3f  |", mb_state.right_cmd);
+			printf("%7.3f  |", mb_state.gamma);
+
 			pthread_mutex_unlock(&state_mutex);
 			fflush(stdout);
 		}

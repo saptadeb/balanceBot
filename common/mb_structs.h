@@ -6,6 +6,7 @@ struct mb_state{
     // raw sensor inputs
     float   theta;             // body angle (rad)
     float   phi;               // average wheel angle (rad)
+    float   gamma;             // heading angle
     int     left_encoder;      // left encoder counts since last reading
     int     right_encoder;     // right encoder counts since last reading
 
@@ -35,6 +36,10 @@ struct mb_setpoints{
     float fwd_velocity; // fwd velocity in m/s
     float turn_velocity; // turn velocity in rad/s
     int manual_ctl;
+    float phi_dot;
+    float phi_ref;
+    float gamma_ref;
+    float gamma_dot;
 };
 
 typedef struct mb_odometry mb_odometry_t;
