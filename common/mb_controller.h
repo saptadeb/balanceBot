@@ -18,12 +18,14 @@ int mb_controller_cleanup();
 
 
 // DSM channel config
-#define DSM_DRIVE_POL		1
-#define DSM_TURN_POL		1
+#define DSM_DRIVE_POL		-1
+#define DSM_TURN_POL		-1
 #define DSM_DRIVE_CH		3
 #define DSM_TURN_CH			4
 #define DSM_MANUAL_CTL_CH   5
 #define DSM_DEAD_ZONE		0.04
+#define DRIVE_RATE_NOVICE   8
+#define TURN_RATE_NOVICE 	3
 
 #endif
 

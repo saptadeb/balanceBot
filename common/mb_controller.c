@@ -118,11 +118,7 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
 
     //Outer loop
     int ENABLE_POSITION_HOLD = 1;    //for balancing
-    mb_setpoints->phi_dot = 0.0;     //for balancing; need to change later
-    mb_setpoints->phi_ref = 0.0;         //for balancing; need to change later
-    
-    mb_setpoints->gamma_dot = 0.0;     //for balancing; need to change later
-    mb_setpoints->gamma_ref = 0.0;      //for balancing; need to change later
+
 
     if(ENABLE_POSITION_HOLD){
         if(fabs(mb_setpoints->phi_dot) > 0.001) mb_setpoints->phi_ref += mb_setpoints->phi_dot*DT;

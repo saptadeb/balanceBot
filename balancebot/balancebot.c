@@ -240,22 +240,54 @@ void balancebot_controller(){
 *
 *******************************************************************************/
 void* setpoint_control_loop(void* ptr){
-
+	double drive_stick, turn_stick;
 	while(1){
 
 		if(rc_dsm_is_new_data()){
 				// TODO: Handle the DSM data from the Spektrum radio reciever
 				// You may should implement switching between manual and autonomous mode
 				// using channel 5 of the DSM data.
-			pthread_mutex_lock(&setpoint_mutex);
+			//pthread_mutex_lock(&setpoint_mutex);
 			
 			if(rc_dsm_ch_normalized(DSM_MANUAL_CTL_CH) == 1){
     			mb_setpoints.manual_ctl = 1;
     		} else{
     			mb_setpoints.manual_ctl = 0;
     		}
-
-    		pthread_mutex_unlock(&setpoint_mutex);
+    		if (mb_setpoints.manual_ctl == 1)
+    		{
+    			turn_stick  = rc_dsm_ch_normalized(DSM_TURN_CH) * DSM_TURN_POL;
+		        drive_stick = rc_dsm_ch_normalized(DSM_DRIVE_CH)* DSM_DRIVE_POL;
+		        // saturate the inputs to avoid possible erratic behavior
+		        rc_saturate_double(&drive_stick,-1,1);
+		        rc_saturate_double(&turn_stick,-1,1);
+		        // use a small deadzone to prevent slow drifts in position
+		        if(fabs(drive_stick)<DSM_DEAD_ZONE) drive_stick = 0.0;
+		        if(fabs(turn_stick)<DSM_DEAD_ZONE)  turn_stick  = 0.0;
+		        // translate normalized user input to real setpoint values
+		        /*switch(mb_setpoints.drive_mode){
+		        case NOVICE:
+		                setpoint.phi_dot   = DRIVE_RATE_NOVICE * drive_stick;
+		                setpoint.gamma_dot =  TURN_RATE_NOVICE * turn_stick;
+		                break;
+		        case ADVANCED:
+		                setpoint.phi_dot   = DRIVE_RATE_ADVANCED * drive_stick;
+		                setpoint.gamma_dot = TURN_RATE_ADVANCED  * turn_stick;
+		                break;
+		        default: break;
+	        	}*/
+	        	mb_setpoints.phi_dot   = DRIVE_RATE_NOVICE * drive_stick;
+                mb_setpoints.gamma_dot =  TURN_RATE_NOVICE * turn_stick;
+    		} else {
+    			mb_setpoints.phi_dot = 0.0;
+    			mb_setpoints.gamma_dot = 0.0;
+    		}
+	        
+    		//pthread_mutex_unlock(&setpoint_mutex);
+		}
+		else {
+			mb_setpoints.phi_dot = 0.0;
+			mb_setpoints.gamma_dot = 0.0;
 		}
 	 	rc_nanosleep(1E9 / RC_CTL_HZ);
 	}
@@ -282,6 +314,7 @@ void* printf_loop(void* ptr){
 			printf("\nRUNNING: Hold upright to balance.\n");
 			printf("                 SENSORS               |            MOCAP            |");
 			printf("\n");
+			printf("theta_ref|");
 			printf("    θ    |");
 			printf("    φ    |");
 			printf("  L Enc  |");
@@ -304,6 +337,7 @@ void* printf_loop(void* ptr){
 			printf("\r");
 			//Add Print stattements here, do not follow with /n
 			pthread_mutex_lock(&state_mutex);
+			printf("%7.3f  |", mb_setpoints.theta_ref);
 			printf("%7.3f  |", mb_state.theta);
 			printf("%7.3f  |", mb_state.phi);
 			printf("%7d  |", mb_state.left_encoder);

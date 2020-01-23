@@ -1,0 +1,8 @@
+6th channel for ARM/DISARM
+5th channel for three states: NONE, DSM, STDIN
+
+
+To do:
+Tip angle 
+saturation on phi_dot, gamma_dot
+tune things, mainly inner loop
