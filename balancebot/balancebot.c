@@ -128,6 +128,17 @@ int main(){
 	printf("initializing odometry...\n");
 	mb_odometry_init(&mb_odometry, 0.0,0.0,0.0);
 
+
+	printf("initializing starting angles...\n");
+	mb_setpoints.phi_dot = 0.0;     //for balancing; need to change later
+    mb_setpoints.phi_ref = 0.0;         //for balancing; need to change later
+    
+    mb_setpoints.gamma_dot = 0.0;     //for balancing; need to change later
+    mb_setpoints.gamma_ref = 0.0;      //for balancing; need to change later
+
+
+
+
 	printf("attaching imu interupt...\n");
 	rc_mpu_set_dmp_callback(&balancebot_controller);
 
@@ -169,6 +180,7 @@ void balancebot_controller(){
 	//lock state mutex
 	pthread_mutex_lock(&state_mutex);
 	// Read IMU
+
 	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];				//Roll corresponds to pitch and vice versa
 
 	// Read encoders
@@ -234,6 +246,15 @@ void* setpoint_control_loop(void* ptr){
 				// TODO: Handle the DSM data from the Spektrum radio reciever
 				// You may should implement switching between manual and autonomous mode
 				// using channel 5 of the DSM data.
+			pthread_mutex_lock(&setpoint_mutex);
+			
+			if(rc_dsm_ch_normalized(DSM_MANUAL_CTL_CH) == 1){
+    			mb_setpoints.manual_ctl = 1;
+    		} else{
+    			mb_setpoints.manual_ctl = 0;
+    		}
+
+    		pthread_mutex_unlock(&setpoint_mutex);
 		}
 	 	rc_nanosleep(1E9 / RC_CTL_HZ);
 	}

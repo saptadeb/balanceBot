@@ -16,5 +16,14 @@ int mb_controller_cleanup();
 #define THETA_REF_MAX 0.33
 #define STEERING_INPUT_MAX 0.5
 
+
+// DSM channel config
+#define DSM_DRIVE_POL		1
+#define DSM_TURN_POL		1
+#define DSM_DRIVE_CH		3
+#define DSM_TURN_CH			4
+#define DSM_MANUAL_CTL_CH   5
+#define DSM_DEAD_ZONE		0.04
+
 #endif
 
