@@ -137,8 +137,6 @@ int main(){
     mb_setpoints.gamma_ref = 0.0;      //for balancing; need to change later
 
 
-
-
 	printf("attaching imu interupt...\n");
 	rc_mpu_set_dmp_callback(&balancebot_controller);
 
@@ -201,14 +199,17 @@ void balancebot_controller(){
     float dutyL = mb_state.left_cmd;
     float dutyR = mb_state.right_cmd;
 
-    if(!mb_setpoints.manual_ctl){	
+    mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
+    mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
+
+    /*if(!mb_setpoints.manual_ctl){	
         mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
         mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
    	}
 
     if(mb_setpoints.manual_ctl){
     	//send motor commands
-   	}
+   	}*/
 
 	XBEE_getData();
 	double q_array[4] = {xbeeMsg.qw, xbeeMsg.qx, xbeeMsg.qy, xbeeMsg.qz};
