@@ -3,6 +3,12 @@
 
 
 To do:
+1. Work on odometry
+
 Tip angle 
 saturation on phi_dot, gamma_dot
 tune things, mainly inner loop
+
+Ask Mohie to drive the bot and the issue of 
+it tilting and going in one direction
+
