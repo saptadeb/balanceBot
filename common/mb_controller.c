@@ -32,38 +32,34 @@ double kp_3, ki_3, kd_3;
 int mb_controller_init(){
     mb_controller_load_config();
     /* TODO initialize your controllers here*/
-    
 
+    // Inner loop controller
     if(rc_filter_pid(&D1, kp_1, ki_1, kd_1, 4 * DT, DT)){
         fprintf(stderr,"ERROR in rc_balance, failed to make inner-loop controller\n");
         return -1;
     }
-
     rc_filter_enable_saturation(&D1, -1.0, 1.0);
-    rc_filter_enable_soft_start(&D1, SOFT_START_SEC);
-    
+    rc_filter_enable_soft_start(&D1, SOFT_START_SEC);    
     printf("inner loop controller D1: \n");
     rc_filter_print(D1);
 
+    // Outer loop controller
     if(rc_filter_pid(&D2, kp_2, ki_2, kd_2, 4 * DT, DT)){
         fprintf(stderr,"ERROR in rc_balance, failed to make outer-loop controller\n");
         return -1;
     }
-
     rc_filter_enable_saturation(&D2, -THETA_REF_MAX, THETA_REF_MAX);
     rc_filter_enable_soft_start(&D2, SOFT_START_SEC);
-    
     printf("outer loop controller D2: \n");
     rc_filter_print(D2);
 
-        // set up D3 gamma (steering) controller
+    // set up D3 gamma (steering) controller
     if(rc_filter_pid(&D3, kp_3, ki_3, kd_3, 4*DT, DT)){
             fprintf(stderr,"ERROR in rc_balance, failed to make steering controller\n");
             return -1;
     }    
     rc_filter_enable_soft_start(&D3, SOFT_START_SEC);
     rc_filter_enable_saturation(&D3, -STEERING_INPUT_MAX, STEERING_INPUT_MAX);
-
     return 0;
 }
 
@@ -118,7 +114,6 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
 
     //Outer loop
     int ENABLE_POSITION_HOLD = 1;    //for balancing
-
 
     if(ENABLE_POSITION_HOLD){
         if(fabs(mb_setpoints->phi_dot) > 0.001) mb_setpoints->phi_ref += mb_setpoints->phi_dot*DT;

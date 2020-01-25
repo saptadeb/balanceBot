@@ -23,9 +23,6 @@
 
 #include "balancebot.h"
 
-double kp_1, ki_1, kd_1;
-double kp_2, ki_2, kd_2;
-
 /*******************************************************************************
 * int main() 
 *
@@ -130,12 +127,11 @@ int main(){
 
 
 	printf("initializing starting angles...\n");
-	mb_setpoints.phi_dot = 0.0;     //for balancing; need to change later
-    mb_setpoints.phi_ref = 0.0;         //for balancing; need to change later
-    
-    mb_setpoints.gamma_dot = 0.0;     //for balancing; need to change later
-    mb_setpoints.gamma_ref = 0.0;      //for balancing; need to change later
-
+	
+	mb_setpoints.phi_dot = 0.0;     
+    mb_setpoints.phi_ref = 0.0;         
+    mb_setpoints.gamma_dot = 0.0;     
+    mb_setpoints.gamma_ref = 0.0;      
 
 	printf("attaching imu interupt...\n");
 	rc_mpu_set_dmp_callback(&balancebot_controller);
@@ -176,24 +172,22 @@ int main(){
 void balancebot_controller(){
 
 	//lock state mutex
+	pthread_mutex_lock(&setpoint_mutex);
 	pthread_mutex_lock(&state_mutex);
 	// Read IMU
-
 	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];				//Roll corresponds to pitch and vice versa
 
 	// Read encoders
 	mb_state.left_encoder = rc_encoder_eqep_read(1);
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
-    // Update odometry 
- 
+    
+	// Update odometry 
 	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
     mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
     mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2) + mb_state.theta;
 
     // Calculate controller outputs
-    //mb_setpoints.theta_ref = 0.0;
-
     mb_controller_update(&mb_state, &mb_setpoints);
 
     float dutyL = mb_state.left_cmd;
@@ -228,6 +222,7 @@ void balancebot_controller(){
 	}
 	
    	//unlock state mutex
+	pthread_mutex_unlock(&setpoint_mutex);
     pthread_mutex_unlock(&state_mutex);
 }
 
@@ -242,13 +237,12 @@ void balancebot_controller(){
 void* setpoint_control_loop(void* ptr){
 	double drive_stick, turn_stick;
 	while(1){
-
 		if(rc_dsm_is_new_data()){
 				// TODO: Handle the DSM data from the Spektrum radio reciever
 				// You may should implement switching between manual and autonomous mode
 				// using channel 5 of the DSM data.
-			//pthread_mutex_lock(&setpoint_mutex);
-			
+			pthread_mutex_lock(&setpoint_mutex);
+
 			if(rc_dsm_ch_normalized(DSM_MANUAL_CTL_CH) == 1){
     			mb_setpoints.manual_ctl = 1;
     		} else{
@@ -282,13 +276,12 @@ void* setpoint_control_loop(void* ptr){
     			mb_setpoints.phi_dot = 0.0;
     			mb_setpoints.gamma_dot = 0.0;
     		}
-	        
-    		//pthread_mutex_unlock(&setpoint_mutex);
 		}
 		else {
 			mb_setpoints.phi_dot = 0.0;
 			mb_setpoints.gamma_dot = 0.0;
 		}
+		pthread_mutex_unlock(&setpoint_mutex);
 	 	rc_nanosleep(1E9 / RC_CTL_HZ);
 	}
 	return NULL;
@@ -335,7 +328,7 @@ void* printf_loop(void* ptr){
 		
 		if(new_state == RUNNING){
 			printf("\r");
-			//Add Print stattements here, do not follow with /n
+			//Add Print stattements here, do not follow with \n
 			pthread_mutex_lock(&state_mutex);
 			printf("%7.3f  |", mb_setpoints.theta_ref);
 			printf("%7.3f  |", mb_state.theta);
@@ -356,17 +349,3 @@ void* printf_loop(void* ptr){
 	}
 	return NULL;
 } 
-
-
-/*static void* __battery_checker(__attribute__ ((unused)) void* ptr)
-{
-        double new_v;
-        while(rc_get_state()!=EXITING){
-                new_v = rc_adc_batt();
-                // if the value doesn't make sense, use nominal voltage
-                if (new_v>9.0 || new_v<5.0) new_v = V_NOMINAL; // need to change the limits in this if statement
-                cstate.vBatt = new_v;
-                rc_usleep(1000000 / BATTERY_CHECK_HZ);
-        }
-        return NULL;
-}*/
