@@ -10,6 +10,7 @@
 #define MB_DEFS_H
 
 #define CFG_PATH "../common/pid.csv"
+#define CFG_PATH_NEW "../common/numden.csv"
 
 #define DEFAULT_PWM_FREQ        25000 // period of motor drive pwm
 #define LEFT_MOTOR                  1 // id of left motor

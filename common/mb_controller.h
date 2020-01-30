@@ -13,7 +13,7 @@ int mb_controller_cleanup();
 
 #define DT 0.01
 #define SOFT_START_SEC 0.7
-#define THETA_REF_MAX 0.33
+#define THETA_REF_MAX 0.5
 #define STEERING_INPUT_MAX 0.5
 
 
@@ -24,8 +24,18 @@ int mb_controller_cleanup();
 #define DSM_TURN_CH			4
 #define DSM_MANUAL_CTL_CH   5
 #define DSM_DEAD_ZONE		0.04
-#define DRIVE_RATE_NOVICE   8
-#define TURN_RATE_NOVICE 	3
+#define DRIVE_RATE_NOVICE   16
+#define TURN_RATE_NOVICE 	6
+
+//For the controllers
+#define D1_NUM_LEN 3
+#define D1_DEN_LEN 3
+
+#define D2_NUM_LEN 3
+#define D2_DEN_LEN 3
+
+
+
 
 #endif
 

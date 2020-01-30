@@ -23,6 +23,9 @@
 
 #include "balancebot.h"
 
+left_last_angle = 0.0;
+right_last_angle = 0.0;
+
 /*******************************************************************************
 * int main() 
 *
@@ -96,8 +99,8 @@ int main(){
 	// set up mpu configuration
 	rc_mpu_config_t mpu_config = rc_mpu_default_config();
 	mpu_config.dmp_sample_rate = SAMPLE_RATE_HZ;
-	mpu_config.orient = ORIENTATION_Z_UP;
-	mpu_config.orient = ORIENTATION_X_FORWARD;
+	mpu_config.orient = ORIENTATION_Z_DOWN;
+	//mpu_config.orient = ORIENTATION_X_FORWARD;
 
 	// now set up the imu for dmp interrupt operation
 	if(rc_mpu_initialize_dmp(&mpu_data, mpu_config)){
@@ -172,26 +175,31 @@ int main(){
 void balancebot_controller(){
 
 	//lock state mutex
-	pthread_mutex_lock(&setpoint_mutex);
+	//pthread_mutex_lock(&setpoint_mutex);
 	pthread_mutex_lock(&state_mutex);
 	// Read IMU
-	mb_state.theta = mpu_data.dmp_TaitBryan[TB_ROLL_Y];				//Roll corresponds to pitch and vice versa
+	mb_state.theta = -mpu_data.dmp_TaitBryan[TB_PITCH_X];				//Roll corresponds to pitch and vice versa
 
 	// Read encoders
 	mb_state.left_encoder = rc_encoder_eqep_read(1);
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
     
-	// Update odometry 
-	mb_state.wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
-    mb_state.wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
-
-    mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2) + mb_state.theta;
+	// Update odometry
+	mb_odometry_update(&mb_odometry, &mb_state);
+    mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2) - mb_state.theta;
+    //mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2);
 
     // Calculate controller outputs
     mb_controller_update(&mb_state, &mb_setpoints);
 
     float dutyL = mb_state.left_cmd;
     float dutyR = mb_state.right_cmd;
+
+    /*if (abs(dutyL) < 0.002 && abs(dutyR) < 0.002)
+    {
+    	dutyL = 0.0;
+    	dutyR = 0.0;
+    }*/
 
     mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
     mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
@@ -222,7 +230,7 @@ void balancebot_controller(){
 	}
 	
    	//unlock state mutex
-	pthread_mutex_unlock(&setpoint_mutex);
+	//pthread_mutex_unlock(&setpoint_mutex);
     pthread_mutex_unlock(&state_mutex);
 }
 
@@ -241,7 +249,7 @@ void* setpoint_control_loop(void* ptr){
 				// TODO: Handle the DSM data from the Spektrum radio reciever
 				// You may should implement switching between manual and autonomous mode
 				// using channel 5 of the DSM data.
-			pthread_mutex_lock(&setpoint_mutex);
+			//pthread_mutex_lock(&setpoint_mutex);
 
 			if(rc_dsm_ch_normalized(DSM_MANUAL_CTL_CH) == 1){
     			mb_setpoints.manual_ctl = 1;
@@ -281,7 +289,7 @@ void* setpoint_control_loop(void* ptr){
 			mb_setpoints.phi_dot = 0.0;
 			mb_setpoints.gamma_dot = 0.0;
 		}
-		pthread_mutex_unlock(&setpoint_mutex);
+		//pthread_mutex_unlock(&setpoint_mutex);
 	 	rc_nanosleep(1E9 / RC_CTL_HZ);
 	}
 	return NULL;
@@ -308,6 +316,7 @@ void* printf_loop(void* ptr){
 			printf("                 SENSORS               |            MOCAP            |");
 			printf("\n");
 			printf("theta_ref|");
+			printf(" phi_ref |");
 			printf("    θ    |");
 			printf("    φ    |");
 			printf("  L Enc  |");
@@ -315,9 +324,13 @@ void* printf_loop(void* ptr){
 			printf("    X    |");
 			printf("    Y    |");
 			printf("    ψ    |");
-			printf("left_duty|");
-			printf("right_duty|");
+			printf(" left_d  |");
+			printf(" right_d |");
 			printf("  gamma  |");
+			printf("    x    |");
+			printf("    y    |");
+			printf("   psi   |");
+			printf("  phidot |");
 
 			printf("\n");
 		}
@@ -329,8 +342,8 @@ void* printf_loop(void* ptr){
 		if(new_state == RUNNING){
 			printf("\r");
 			//Add Print stattements here, do not follow with \n
-			pthread_mutex_lock(&state_mutex);
 			printf("%7.3f  |", mb_setpoints.theta_ref);
+			printf("%7.3f  |", mb_setpoints.phi_ref);
 			printf("%7.3f  |", mb_state.theta);
 			printf("%7.3f  |", mb_state.phi);
 			printf("%7d  |", mb_state.left_encoder);
@@ -341,8 +354,11 @@ void* printf_loop(void* ptr){
 			printf("%7.3f  |", mb_state.left_cmd);
 			printf("%7.3f  |", mb_state.right_cmd);
 			printf("%7.3f  |", mb_state.gamma);
+			printf("%7.3f  |", mb_odometry.x);
+			printf("%7.3f  |", mb_odometry.y);
+			printf("%7.3f  |", mb_odometry.psi);
+			printf("%7.3f  |", mb_setpoints.phi_dot);
 
-			pthread_mutex_unlock(&state_mutex);
 			fflush(stdout);
 		}
 		rc_nanosleep(1E9/PRINTF_HZ);

@@ -88,8 +88,8 @@ int main(){
 	rc_make_pid_file();
 
     rc_mpu_config_t conf = rc_mpu_default_config();
-    conf.orient = ORIENTATION_Z_UP;
-    conf.orient = ORIENTATION_X_FORWARD; 
+    conf.orient = ORIENTATION_Z_DOWN;
+    //conf.orient = ORIENTATION_X_FORWARD; 
     conf.i2c_bus = I2C_BUS;
     conf.dmp_sample_rate = 100;
     conf.gpio_interrupt_pin_chip = GPIO_INT_PIN_CHIP;
