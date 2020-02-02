@@ -136,7 +136,7 @@ int mb_controller_load_config(){
     if (file == NULL){
         printf("Error opening %s\n", CFG_PATH_NEW );
     }
-    /* TODO parse your config file here*/
+
     if (fscanf(file, "%lf,%lf,%lf\n", &num_11, &num_12, &num_13) != 3) {
         fprintf(stderr, "Couldn't read value for inner loop.\n");
         return -1;

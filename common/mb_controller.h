@@ -24,8 +24,8 @@ int mb_controller_cleanup();
 #define DSM_TURN_CH			4
 #define DSM_MANUAL_CTL_CH   5
 #define DSM_DEAD_ZONE		0.04
-#define DRIVE_RATE_NOVICE   16
-#define TURN_RATE_NOVICE 	6
+#define DRIVE_RATE_NOVICE   25
+#define TURN_RATE_NOVICE 	4
 
 //For the controllers
 #define D1_NUM_LEN 3
