@@ -163,7 +163,7 @@ int mb_controller_load_config(){
 *
 *******************************************************************************/
 
-int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
+int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints, rc_mpu_data_t* mpu_data){
     /*TODO: Write your controller here*/
     //D1.gain = D1_GAIN * V_NOMINAL/mb_state->vBatt;
 
@@ -181,6 +181,8 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints){
     mb_state->d1_u = rc_filter_march(&D1,(mb_setpoints->theta_ref-mb_state->theta));
 
     mb_state->gamma = (mb_state->wheelAngleR-mb_state->wheelAngleL) * (WHEEL_DIAMETER/ (2 * WHEEL_BASE));
+    //mb_state->gamma = mpu_data->dmp_TaitBryan[TB_YAW_Z];
+    //mb_state->gamma = mb_odometry->psi;
 
     if(fabs(mb_setpoints->gamma_dot)>0.0001) mb_setpoints->gamma_ref += mb_setpoints->gamma_dot * DT;
     mb_state->d3_u = rc_filter_march(&D3,mb_setpoints->gamma_ref - mb_state->gamma);

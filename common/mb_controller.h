@@ -8,7 +8,7 @@
 
 int mb_controller_init();
 int mb_controller_load_config();
-int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints);
+int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints, rc_mpu_data_t* mpu_data);
 int mb_controller_cleanup();
 
 #define DT 0.01

@@ -52,6 +52,7 @@ struct mb_odometry{
     float psi;      //orientation from initialization in rad
     float left_last_angle;
     float right_last_angle;
+    float last_yaw;
 };
 
 #endif

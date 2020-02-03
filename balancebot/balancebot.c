@@ -215,7 +215,7 @@ void balancebot_controller(){
     //mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2);
 
     // Calculate controller outputs
-    mb_controller_update(&mb_state, &mb_setpoints);
+    mb_controller_update(&mb_state, &mb_setpoints, &mpu_data);
 
     float dutyL = mb_state.left_cmd;
     float dutyR = mb_state.right_cmd;
@@ -324,7 +324,7 @@ void* setpoint_control_loop(void* ptr){
 
 			double length;
 			double phi_dot_max;
-			double initial_dist;
+			double initial_dist;   //THE DIST WHEN IT STARTS THE SECOND PARABOLA
 			double init_phi_dot;
 			
 
@@ -367,34 +367,102 @@ void* setpoint_control_loop(void* ptr){
 		else if(MODE == 2) {
 																			//TO DO AUTONOMOUS SQUARE
 			
-			double length = 1;
-			double radius = 0.1;
+			double length;
+			double radius;
+			double ref_gammadot;
+			double ref_phidot;
+			double temp_x;
+			double temp_y;
+			double distance;
+			double phi_dot_turning;
+
+			FILE* file = fopen("../common/square.csv", "r");
+		    if (file == NULL){
+		        printf("Error opening %s\n", "square.csv" );
+		    }
+		    /* TODO parse your config file here*/
+		    if (fscanf(file, "%lf,%lf,%lf,%lf,%lf\n", &length, &radius, &ref_gammadot, &ref_phidot, &phi_dot_turning) != 5) {
+		        fprintf(stderr, "Couldn't read value for sqaure.\n");
+		        return -1;
+		    }
+		    
+		    fclose(file);
+
+			double temp_yaw = fabs(mpu_data.dmp_TaitBryan[TB_YAW_Z]);
+
+			/*if (temp_yaw < -0.001)
+			{
+				temp_yaw += 2*3.14;
+			}*/
 
 
-			mb_setpoints.phi_dot = -5;
+			mb_setpoints.phi_dot = -ref_phidot;
 			if (START)
 			{
-				if (mb_odometry.x < (length - radius))
+				if (mb_odometry.x < (length))
 				{
+					mb_setpoints.phi_dot = -(4*ref_phidot/((length)*(length))) * fabs(mb_odometry.x)*(length - mb_odometry.x)-phi_dot_turning;
 					mb_setpoints.gamma_dot = 0.0;
 				} else {
 					START = 0;
-					TO_TURN = 1;
+					TO_TURN += 1;
 					//printf("TO_TURN %d\n", TO_TURN);
 				}
-			} else {
-				switch(TO_TURN){
-					case 1: mb_setpoints.gamma_dot = -1.0;
-							if (mpu_data.dmp_TaitBryan[TB_YAW_Z] - yaw_init >= 3.14 / 2.0)
+			} /*else {
+				switch(TO_TURN % 2){
+					case 1: mb_setpoints.gamma_dot = -ref_gammadot;
+							if ((int)100*fabs((temp_yaw) - (yaw_init)) > 150)
+							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))	
 							{
-								TO_TURN = 0;
-								yaw_init = mpu_data.dmp_TaitBryan[TB_YAW_Z];
+								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
+								TO_TURN += 1;
+								yaw_init = temp_yaw;
+								temp_x = mb_odometry.x;
+								temp_y = mb_odometry.y;
 							}
 							break;
 					case 0: mb_setpoints.gamma_dot = 0.0;
-							if (!((mb_odometry.x > radius && mb_odometry.x < length - radius) || (mb_odometry.y < length - radius && mb_odometry.y > radius)))
+							distance = sqrt(pow((mb_odometry.x-temp_x),2)+pow((mb_odometry.y-temp_y),2));
+
+
+							if (distance > length - (2*radius))
 							{
-								TO_TURN = 1;
+								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);								
+								TO_TURN += 1;
+							}
+							break;
+					}							
+				}*/
+			else {
+				switch(TO_TURN % 2){
+					case 1: //mb_setpoints.gamma_dot = -ref_gammadot;
+							mb_setpoints.gamma_dot = -(ref_gammadot * (temp_yaw)*fabs(yaw_init - temp_yaw))-0.3;
+							mb_setpoints.phi_dot = -phi_dot_turning;
+							if ((int)100*fabs((temp_yaw) - (yaw_init)) > 150)
+							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))	
+							{
+								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
+								TO_TURN += 1;
+								yaw_init = temp_yaw;
+								temp_x = mb_odometry.x;
+								temp_y = mb_odometry.y;
+								rc_nanosleep(1E9 / RC_CTL_HZ);
+							}
+							break;
+					case 0: mb_setpoints.gamma_dot = 0.0;
+							
+							distance = sqrt(pow((mb_odometry.x-temp_x),2)+pow((mb_odometry.y-temp_y),2));
+							mb_setpoints.phi_dot = -(4*ref_phidot/((length)*(length))) * fabs(distance)*(length - distance)-phi_dot_turning;
+
+							if (distance > length - (2*radius))
+							{
+								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);								
+								TO_TURN += 1;
+								rc_nanosleep(1E9 / RC_CTL_HZ);
 							}
 							break;
 					}							
@@ -439,10 +507,13 @@ void* printf_loop(void* ptr){
 			printf(" left_d  |");
 			printf(" right_d |");
 			printf("  gamma  |");
+			printf("yaw_init |");
 			printf("    x    |");
 			printf("    y    |");
+			printf(" TO_TURN |");
 			printf("   psi   |");
 			printf("  phidot |");
+			printf("gammadot |");
 
 			printf("\n");
 		}
@@ -466,10 +537,13 @@ void* printf_loop(void* ptr){
 			printf("%7.3f  |", mb_state.left_cmd);
 			printf("%7.3f  |", mb_state.right_cmd);
 			printf("%7.3f  |", mpu_data.dmp_TaitBryan[TB_YAW_Z]);
+			printf("%7.3f  |", yaw_init);
 			printf("%7.3f  |", mb_odometry.x);
 			printf("%7.3f  |", mb_odometry.y);
+			printf("%d     |", TO_TURN);
 			printf("%7.3f  |", mb_odometry.psi);
 			printf("%7.3f  |", mb_setpoints.phi_dot);
+			printf("%7.3f  |", mb_setpoints.gamma_dot);
 
 			fflush(stdout);
 		}

@@ -15,6 +15,7 @@ void mb_odometry_init(mb_odometry_t* mb_odometry, float x, float y, float theta)
 	mb_odometry->psi = theta;
 	mb_odometry->left_last_angle = 0.0;
 	mb_odometry->right_last_angle = 0.0;
+	mb_odometry->last_yaw = 0.0;
 }
 
 void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
@@ -22,8 +23,11 @@ void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
 	mb_state->wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
     mb_state->wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
-    double left_travel = (mb_state->wheelAngleL - mb_odometry->left_last_angle) * WHEEL_DIAMETER / 2.0;
-    double right_travel = (mb_state->wheelAngleR - mb_odometry->right_last_angle) * WHEEL_DIAMETER / 2.0;
+    //double left_travel = (mb_state->wheelAngleL - mb_odometry->left_last_angle) * (WHEEL_DIAMETER *0.9683) / 2.0;   ////NOT WORKING WITH CORRECTIONS
+    //double right_travel = (mb_state->wheelAngleR - mb_odometry->right_last_angle) * (WHEEL_DIAMETER *1.0317)/ 2.0;
+
+    double left_travel = (mb_state->wheelAngleL - mb_odometry->left_last_angle) * (WHEEL_DIAMETER) / 2.0;
+    double right_travel = (mb_state->wheelAngleR - mb_odometry->right_last_angle) * (WHEEL_DIAMETER) / 2.0;
 
     mb_state->wheelVelR = right_travel / DT;
     mb_state->wheelVelL = left_travel / DT;
@@ -31,16 +35,20 @@ void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
     mb_odometry->left_last_angle = mb_state->wheelAngleL;
     mb_odometry->right_last_angle = mb_state->wheelAngleR;
 
-    double w = (mb_state->wheelVelR - mb_state->wheelVelL) / WHEEL_BASE;
+	//double w = (mb_state->wheelVelR - mb_state->wheelVelL) / (WHEEL_BASE*0.9279);
 
     //if (abs(w) < 0.001)
     //{
     	double delta_d = (left_travel + right_travel) / 2.0;
-	    double delta_psi = -(right_travel - left_travel) / WHEEL_BASE;
+	    double delta_psi = -(right_travel - left_travel) / (WHEEL_BASE);
+	    //double delta_psi = -(right_travel - left_travel) / (WHEEL_BASE*0.9279);       //NOT WORKING WITH CORRECTIONS
+    	//double delta_psi = mpu_data.dmp_TaitBryan[TB_YAW_Z] - mb_odometry->last_yaw;   //GYRO DATA X AND Y BETTER
 
 	    mb_odometry->x -= delta_d * cos(mb_odometry->psi + delta_psi / 2.0);
 	    mb_odometry->y -= delta_d * sin(mb_odometry->psi + delta_psi / 2.0);
+	    mb_odometry->last_yaw = mb_odometry->psi;
 	    mb_odometry->psi += delta_psi;
+
     /*} else {
 	    double R = (WHEEL_BASE / 2.0) *(mb_state->wheelVelR + mb_state->wheelVelL) / (mb_state->wheelVelR - mb_state->wheelVelL);
    	    double C_R[2];
