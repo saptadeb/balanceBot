@@ -3,7 +3,7 @@
 *
 * Main template code for the BalanceBot Project
 * based on rc_balance
-* 
+*
 *******************************************************************************/
 
 #include <math.h>
@@ -25,14 +25,14 @@
 
 int WRITE_FLAG = 0;
 int GOT_TO_FINISH = 0;
-int MODE = 0; //0 balancing    1 for drag race    2 for square 
+int MODE = 0; //0 balancing    1 for drag race    2 for square
 FILE* f1;
 double yaw_init = 0.0;
 int START = 1;
 int TO_TURN = 0;
 
 /*******************************************************************************
-* int main() 
+* int main()
 *
 *******************************************************************************/
 int main(int argc, char **argv){
@@ -152,11 +152,11 @@ int main(int argc, char **argv){
 
 
 	printf("initializing starting angles...\n");
-	
-	mb_setpoints.phi_dot = 0.0;     
-    mb_setpoints.phi_ref = 0.0;         
-    mb_setpoints.gamma_dot = 0.0;     
-    mb_setpoints.gamma_ref = 0.0;      
+
+	mb_setpoints.phi_dot = 0.0;
+    mb_setpoints.phi_ref = 0.0;
+    mb_setpoints.gamma_dot = 0.0;
+    mb_setpoints.gamma_ref = 0.0;
 
     /*printf("Press enter to start recording data: \n");
     WRITE_FLAG = getchar();*/
@@ -166,7 +166,7 @@ int main(int argc, char **argv){
 
 	printf("we are running!!!...\n");
 	// done initializing so set state to RUNNING
-	rc_set_state(RUNNING); 
+	rc_set_state(RUNNING);
 
 	// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
@@ -177,13 +177,13 @@ int main(int argc, char **argv){
 		// always sleep at some point
 		rc_nanosleep(1E9);
 	}
-	
+
 	// exit cleanly
 	rc_mpu_power_off();
 	mb_motor_cleanup();
 	rc_led_cleanup();
 	rc_encoder_eqep_cleanup();
-	rc_remove_pid_file(); // remove pid file LAST 
+	rc_remove_pid_file(); // remove pid file LAST
 	return 0;
 }
 
@@ -194,7 +194,7 @@ int main(int argc, char **argv){
 * Called at SAMPLE_RATE_HZ
 *
 * TODO: You must implement this function to keep the balancebot balanced
-* 
+*
 *
 *******************************************************************************/
 void balancebot_controller(){
@@ -208,7 +208,7 @@ void balancebot_controller(){
 	// Read encoders
 	mb_state.left_encoder = rc_encoder_eqep_read(1);
 	mb_state.right_encoder = rc_encoder_eqep_read(2);
-    
+
 	// Update odometry
 	mb_odometry_update(&mb_odometry, &mb_state);
     mb_state.phi = ((mb_state.wheelAngleL+mb_state.wheelAngleR)/2) - mb_state.theta;
@@ -229,7 +229,7 @@ void balancebot_controller(){
     mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
     mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
 
-    /*if(!mb_setpoints.manual_ctl){	
+    /*if(!mb_setpoints.manual_ctl){
         mb_motor_set(LEFT_MOTOR, MOT_1_POL * dutyL);
         mb_motor_set(RIGHT_MOTOR, MOT_2_POL * dutyR);
    	}
@@ -247,7 +247,7 @@ void balancebot_controller(){
 	mb_state.opti_roll = tb_array[0];
 	mb_state.opti_pitch = -tb_array[1]; //xBee quaternion is in Z-down, need Z-up
 	mb_state.opti_yaw = -tb_array[2];   //xBee quaternion is in Z-down, need Z-up
-	
+
 	if (rc_get_state() == EXITING)
 	{
 		mb_motor_set(LEFT_MOTOR,0.0);
@@ -291,7 +291,7 @@ void* setpoint_control_loop(void* ptr){
 	    		}
 	    		if (mb_setpoints.manual_ctl == 1)
 	    		{
-	    																// DRIVING VIA RC 
+	    																// DRIVING VIA RC
 
 	    			turn_stick  = rc_dsm_ch_normalized(DSM_TURN_CH) * DSM_TURN_POL;
 			        drive_stick = rc_dsm_ch_normalized(DSM_DRIVE_CH)* DSM_DRIVE_POL;
@@ -317,7 +317,7 @@ void* setpoint_control_loop(void* ptr){
 	    		mb_setpoints.gamma_dot = 0.0;
 			}
 		}
-		
+
 		else if(MODE == 1){
 																		//DRAG RACING
 
@@ -326,7 +326,7 @@ void* setpoint_control_loop(void* ptr){
 			double phi_dot_max;
 			double initial_dist;   //THE DIST WHEN IT STARTS THE SECOND PARABOLA
 			double init_phi_dot;
-			
+
 
 			FILE* file = fopen("../common/dragrace.csv", "r");
 		    if (file == NULL){
@@ -337,7 +337,7 @@ void* setpoint_control_loop(void* ptr){
 		        fprintf(stderr, "Couldn't read value for drag race.\n");
 		        return -1;
 		    }
-		    
+
 		    fclose(file);
 			if (!GOT_TO_FINISH)
 			{
@@ -345,28 +345,30 @@ void* setpoint_control_loop(void* ptr){
 				{
 					GOT_TO_FINISH = 1;
 					mb_setpoints.phi_dot = 0.0;
-				} else if (mb_odometry.x < initial_dist || mb_odometry.x > length - initial_dist)   
+				} else if (mb_odometry.x < initial_dist)// || mb_odometry.x > length - initial_dist)
 				{
 					if (mb_odometry.x < initial_dist)
 					{
-						mb_setpoints.phi_dot = -(init_phi_dot/((initial_dist)*(initial_dist))) * fabs(mb_odometry.x)*(initial_dist*2 - mb_odometry.x);
-					} else {
-						mb_setpoints.phi_dot = - (init_phi_dot/initial_dist)* (length - mb_odometry.x);
-					}
-				} 
+						mb_setpoints.phi_dot = -(init_phi_dot/((initial_dist)*(initial_dist))) * fabs(mb_odometry.x)*(initial_dist * 2 - mb_odometry.x);
+					} /*else {
+						//mb_setpoints.phi_dot = -(init_phi_dot/(initial_dist)*(length - initial_dist)) * fabs(length - mb_odometry.x) * fabs(mb_odometry.x);
+                        mb_setpoints.phi_dot = -1.25*init_phi_dot;
+					}*/
+				}
 				else {
-					mb_setpoints.phi_dot = -(((phi_dot_max - init_phi_dot) / ((length / 2.0 - initial_dist)*(length / 2.0 - initial_dist))) *(mb_odometry.x - initial_dist) 
-						* (length - initial_dist - mb_odometry.x)) - init_phi_dot;
+					//mb_setpoints.phi_dot = -(((phi_dot_max-init_phi_dot)/(((length+initial_dist)/2.0-initial_dist)*((length+initial_dist) / 2.0 - initial_dist))
+                    mb_setpoints.phi_dot = -(phi_dot_max - init_phi_dot)/(((length+initial_dist)/2.0-initial_dist)*((length + initial_dist)/2.0-initial_dist))*(mb_odometry.x - initial_dist)
+						*fabs(length - mb_odometry.x) - init_phi_dot;
 				}
 			} else {
 				mb_setpoints.phi_dot = 0.0;
 			}
-			
+
 			mb_setpoints.gamma_dot = 0.0;
 		}
 		else if(MODE == 2) {
 																			//TO DO AUTONOMOUS SQUARE
-			
+
 			double length;
 			double radius;
 			double ref_gammadot;
@@ -385,7 +387,7 @@ void* setpoint_control_loop(void* ptr){
 		        fprintf(stderr, "Couldn't read value for sqaure.\n");
 		        return -1;
 		    }
-		    
+
 		    fclose(file);
 
 			double temp_yaw = fabs(mpu_data.dmp_TaitBryan[TB_YAW_Z]);
@@ -412,9 +414,9 @@ void* setpoint_control_loop(void* ptr){
 				switch(TO_TURN % 2){
 					case 1: mb_setpoints.gamma_dot = -ref_gammadot;
 							if ((int)100*fabs((temp_yaw) - (yaw_init)) > 150)
-							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))	
+							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))
 							{
-								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n",
 									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
 								TO_TURN += 1;
 								yaw_init = temp_yaw;
@@ -428,12 +430,12 @@ void* setpoint_control_loop(void* ptr){
 
 							if (distance > length - (2*radius))
 							{
-								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
-									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);								
+								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n",
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
 								TO_TURN += 1;
 							}
 							break;
-					}							
+					}
 				}*/
 			else {
 				switch(TO_TURN % 2){
@@ -441,9 +443,9 @@ void* setpoint_control_loop(void* ptr){
 							mb_setpoints.gamma_dot = -(ref_gammadot * (temp_yaw)*fabs(yaw_init - temp_yaw))-0.3;
 							mb_setpoints.phi_dot = -phi_dot_turning;
 							if ((int)100*fabs((temp_yaw) - (yaw_init)) > 150)
-							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))	
+							//if (fabs((temp_yaw) - (yaw_init)) > (3.14/2))
 							{
-								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
+								printf("\nStarted Moving straight x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n",
 									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
 								TO_TURN += 1;
 								yaw_init = temp_yaw;
@@ -453,19 +455,19 @@ void* setpoint_control_loop(void* ptr){
 							}
 							break;
 					case 0: mb_setpoints.gamma_dot = 0.0;
-							
+
 							distance = sqrt(pow((mb_odometry.x-temp_x),2)+pow((mb_odometry.y-temp_y),2));
 							mb_setpoints.phi_dot = -(4*ref_phidot/((length)*(length))) * fabs(distance)*(length - distance)-phi_dot_turning;
 
 							if (distance > length - (2*radius))
 							{
-								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n", 
-									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);								
+								printf("\nTurning started x: %2.4f, y: %2.4f, temp_yaw: %2.4f, yaw_init: %2.4f TO_TURN: %d, temp_x: %2.4f, temp_y: %2.4f, dist: %2.4f\n",
+									mb_odometry.x, mb_odometry.y, temp_yaw, yaw_init, TO_TURN, temp_x, temp_y,distance);
 								TO_TURN += 1;
 								rc_nanosleep(1E9 / RC_CTL_HZ);
 							}
 							break;
-					}							
+					}
 				}
 
 		}
@@ -479,7 +481,7 @@ void* setpoint_control_loop(void* ptr){
 
 
 /*******************************************************************************
-* printf_loop() 
+* printf_loop()
 *
 * prints diagnostics to console
 * this only gets started if executing from terminal
@@ -521,7 +523,7 @@ void* printf_loop(void* ptr){
 			printf("\nPAUSED\n");
 		}
 		last_state = new_state;
-		
+
 		if(new_state == RUNNING){
 			printf("\r");
 			//Add Print stattements here, do not follow with \n
@@ -550,4 +552,4 @@ void* printf_loop(void* ptr){
 		rc_nanosleep(1E9/PRINTF_HZ);
 	}
 	return NULL;
-} 
+}
