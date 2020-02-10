@@ -49,8 +49,6 @@ void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
 
     	double delta_d = (left_travel + right_travel) / 2.0;
 	    double delta_psi = -(right_travel - left_travel) / (WHEEL_BASE * e_b);
-	    //double delta_psi = -(right_travel - left_travel) / (WHEEL_BASE*0.9279);       //NOT WORKING WITH CORRECTIONS
-    	//double delta_psi = mpu_data.dmp_TaitBryan[TB_YAW_Z] - mb_odometry->last_yaw;   //GYRO DATA X AND Y BETTER
 
 	    mb_odometry->x -= delta_d * cos(mb_odometry->psi + delta_psi / 2.0);
 	    mb_odometry->y -= delta_d * sin(mb_odometry->psi + delta_psi / 2.0);
