@@ -20,7 +20,6 @@ struct mb_state{
     float opti_pitch;
     float opti_yaw;
 
-    //TODO: Add more variables to this state as needed
     float wheelAngleR;
     float wheelAngleL;
     float wheelVelR;

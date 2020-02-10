@@ -24,20 +24,9 @@ double den_11,den_12,den_13;
 double num_21,num_22,num_23;
 double den_21,den_22,den_23;
 
-/*******************************************************************************
-* int mb_controller_init()
-*
-* this initializes the controllers from the configuration file
-* you can use this as is or modify it if you want a different format
-*
-* return 0 on success
-*
-*******************************************************************************/
-
 
 int mb_controller_init(){
     mb_controller_load_config();
-    /* TODO initialize your controllers here*/
 
     // Inner loop controller
     kp_1 = kp_1*gain_1;
@@ -83,22 +72,11 @@ int mb_controller_init(){
     return 0;
 }
 
-/*******************************************************************************
-* int mb_controller_load_config()
-*
-* this provides a basic configuration load routine
-* you can use this as is or modify it if you want a different format
-*
-* return 0 on success
-*
-*******************************************************************************/
-
 int mb_controller_load_config(){
     FILE* file = fopen(CFG_PATH, "r");
     if (file == NULL){
         printf("Error opening %s\n", CFG_PATH );
     }
-    /* TODO parse your config file here*/
     if (fscanf(file, "%lf,%lf,%lf,%lf\n", &kp_1, &ki_1, &kd_1, &gain_1) != 4) {
         fprintf(stderr, "Couldn't read value for inner loop.\n");
         return -1;
@@ -116,21 +94,8 @@ int mb_controller_load_config(){
     return 0;
 }
 
-/*******************************************************************************
-* int mb_controller_update()
-*
-*
-* take inputs from the global mb_state
-* write outputs to the global mb_state
-*
-* this should only be called in the imu call back function, no mutex needed
-*
-* return 0 on success
-*
-*******************************************************************************/
 
 int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints, rc_mpu_data_t* mpu_data){
-    /*TODO: Write your controller here*/
 
     //Outer loop
     int ENABLE_POSITION_HOLD = 1;    //for balancing
@@ -155,16 +120,6 @@ int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints, rc_
 
     return 0;
 }
-
-
-/*******************************************************************************
-* int mb_controller_cleanup()
-*
-* TODO: Free all resources associated with your controller
-*
-* return 0 on success
-*
-*******************************************************************************/
 
 int mb_controller_cleanup(){
     return 0;

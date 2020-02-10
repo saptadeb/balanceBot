@@ -1,10 +1,3 @@
-/*******************************************************************************
-* balancebot.c
-*
-* Main template code for the BalanceBot Project
-* based on rc_balance
-*
-*******************************************************************************/
 
 #include <math.h>
 #include <rc/start_stop.h>
@@ -25,7 +18,7 @@
 
 int WRITE_FLAG = 0;
 int GOT_TO_FINISH = 0;
-int MODE = 0; //0 balancing    1 for drag race    2 for square
+int MODE = 0; 								//0 balancing    1 for drag race    2 for square
 FILE* f1;
 double yaw_init = 0.0;
 double gamma_ref = 0.0;
@@ -50,10 +43,6 @@ double phi_dot_turning;
 FILE *fp_step_inner;
 FILE *fp_step_outer;
 
-/*******************************************************************************
-* int main()
-*
-*******************************************************************************/
 int main(int argc, char **argv){
 	// make sure another instance isn't running
     // if return value is -3 then a background process is running with
@@ -126,7 +115,7 @@ int main(int argc, char **argv){
     if (file == NULL){
         printf("Error opening %s\n", CFG_PATH_NEW );
     }
-    /* TODO parse your config file here*/
+
     if (fscanf(file, "%lf,%lf,%lf,%lf\n", &kp_4, &ki_4, &kd_4, &gain_4) != 4) {
         fprintf(stderr, "Couldn't read value for high level heading controller.\n");
         return -1;
@@ -164,7 +153,7 @@ int main(int argc, char **argv){
     if (file == NULL){
         printf("Error opening %s\n", "square.csv" );
     }
-    /* TODO parse your config file here*/
+
     if (fscanf(file, "%lf,%lf,%lf,%lf,%lf\n", &side, &radius, &ref_gammadot, &ref_phidot, &phi_dot_turning) != 5) {
         fprintf(stderr, "Couldn't read value for sqaure.\n");
         return -1;
@@ -182,9 +171,6 @@ int main(int argc, char **argv){
 	printf("starting setpoint thread... \n");
 	pthread_t  setpoint_control_thread;
 	rc_pthread_create(&setpoint_control_thread, setpoint_control_loop, (void*) NULL, SCHED_FIFO, 50);
-
-
-	// TODO: start motion capture message recieve thread
 
 	// set up IMU configuration
 	printf("initializing imu... \n");
@@ -266,16 +252,6 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-/*******************************************************************************
-* void balancebot_controller()
-*
-* discrete-time balance controller operated off IMU interrupt
-* Called at SAMPLE_RATE_HZ
-*
-* TODO: You must implement this function to keep the balancebot balanced
-*
-*
-*******************************************************************************/
 void balancebot_controller(){
 
 	pthread_mutex_lock(&state_mutex);
@@ -327,14 +303,6 @@ void balancebot_controller(){
     pthread_mutex_unlock(&state_mutex);
 }
 
-
-/*******************************************************************************
-*  setpoint_control_loop()
-*
-*  sets current setpoints based on dsm radio data, odometry, and Optitrak
-*
-*
-*******************************************************************************/
 void* setpoint_control_loop(void* ptr){
 	double drive_stick, turn_stick;
 	while(1){
@@ -342,10 +310,6 @@ void* setpoint_control_loop(void* ptr){
 		{
             //mb_setpoints.phi_ref = 0.3 / (WHEEL_DIAMETER / 2.0);
 			if(rc_dsm_is_new_data()){
-				// TODO: Handle the DSM data from the Spektrum radio reciever
-				// You may should implement switching between manual and autonomous mode
-				// using channel 5 of the DSM data.
-			//pthread_mutex_lock(&setpoint_mutex);
 
 				if(rc_dsm_ch_normalized(DSM_MANUAL_CTL_CH) == 1){
 	    			mb_setpoints.manual_ctl = 1;
@@ -381,11 +345,9 @@ void* setpoint_control_loop(void* ptr){
 
 		else if(MODE == 1){
 																		//DRAG RACING
-
-
 			double length;
 			double phi_dot_max;
-			double initial_dist;   //THE DIST WHEN IT STARTS THE SECOND PARABOLA
+			double initial_dist;   						//THE DIST WHEN IT STARTS THE SECOND PARABOLA
 			double init_phi_dot;
 
 
@@ -429,18 +391,16 @@ void* setpoint_control_loop(void* ptr){
 			}
 			mb_setpoints.gamma_dot = 0.0;
 		}
+		
 		else if(MODE == 2) {
 																			//TO DO AUTONOMOUS SQUARE
             if (TO_TURN == 32) {
                 MODE = 0;
             }
-
 			double temp_x;
 			double temp_y;
 			double distance;
-
 			double temp_yaw = fabs(mpu_data.dmp_TaitBryan[TB_YAW_Z]);
-
 			mb_setpoints.phi_dot = -ref_phidot;
 			if (START)
 			{
@@ -476,7 +436,6 @@ void* setpoint_control_loop(void* ptr){
 					case 0: mb_setpoints.gamma_dot = 0.0;
 
 							distance = sqrt(pow((mb_odometry.x-temp_x),2)+pow((mb_odometry.y-temp_y),2));
-							//mb_setpoints.phi_dot = -(4*ref_phidot/((length)*(length))) * fabs(distance)*(length - distance)-phi_dot_turning;
                             mb_setpoints.phi_dot = -rc_filter_march(&D5,(side-radius-distance));
                             fprintf(fp_square, "%2.4f,%2.4f,%2.4f,%2.4f\n", mb_odometry.x, mb_odometry.y, mb_odometry.psi, mpu_data.dmp_TaitBryan[TB_YAW_Z]);
 							if (distance > side - (2*radius))
@@ -489,24 +448,12 @@ void* setpoint_control_loop(void* ptr){
 							break;
 					}
 				}
-
 		}
 	 	rc_nanosleep(1E9 / RC_CTL_HZ);
 	}
 	return NULL;
 }
 
-
-
-
-/*******************************************************************************
-* printf_loop()
-*
-* prints diagnostics to console
-* this only gets started if executing from terminal
-*
-* TODO: Add other data to help you tune/debug your code
-*******************************************************************************/
 void* printf_loop(void* ptr){
 	rc_state_t last_state, new_state; // keep track of last state
 	while(rc_get_state()!=EXITING){
@@ -531,8 +478,6 @@ void* printf_loop(void* ptr){
 			printf("  phidot |");
 			printf("gammadot |");
             printf("   d3u   |");
-
-
 			printf("\n");
 		}
 		else if(new_state==PAUSED && last_state!=PAUSED){
@@ -558,7 +503,6 @@ void* printf_loop(void* ptr){
 			printf("%7.3f  |", mb_setpoints.phi_dot);
 			printf("%7.3f  |", mb_setpoints.gamma_dot);
             printf("%7.3f  |", mb_state.d3_u);
-
 			fflush(stdout);
 		}
 		rc_nanosleep(1E9/PRINTF_HZ);

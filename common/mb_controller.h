@@ -34,7 +34,4 @@ int mb_controller_cleanup();
 #define D2_NUM_LEN 3
 #define D2_DEN_LEN 3
 
-
-
-
 #endif

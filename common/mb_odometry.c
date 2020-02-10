@@ -1,16 +1,8 @@
-/*******************************************************************************
-* mb_odometry.c
-*
-* TODO: Implement these functions to add odometry functionality
-*
-*******************************************************************************/
-
 #include "../balancebot/balancebot.h"
 
 double e_d, e_b;
 
 void mb_odometry_init(mb_odometry_t* mb_odometry, float x, float y, float theta){
-/* TODO */
 	mb_odometry->x = x;
 	mb_odometry->y = y;
 	mb_odometry->psi = theta;
@@ -31,7 +23,6 @@ void mb_odometry_init(mb_odometry_t* mb_odometry, float x, float y, float theta)
 }
 
 void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
-/* TODO */
 	mb_state->wheelAngleR = (rc_encoder_eqep_read(RIGHT_MOTOR) * 2.0 * M_PI) / (ENC_2_POL * GEAR_RATIO * ENCODER_RES);
     mb_state->wheelAngleL = (rc_encoder_eqep_read(LEFT_MOTOR) * 2.0 * M_PI) / (ENC_1_POL * GEAR_RATIO * ENCODER_RES);
 
@@ -56,7 +47,6 @@ void mb_odometry_update(mb_odometry_t* mb_odometry, mb_state_t* mb_state){
 	    mb_odometry->psi += delta_psi;
 
 }
-
 
 float mb_clamp_radians(float angle){
     return 0;

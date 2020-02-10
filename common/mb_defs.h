@@ -1,11 +1,3 @@
-/*******************************************************************************
-* mb_defs.h
-*
-*   defines for your bot
-*   You will need to fill this in based on the data sheets, schematics, etc.
-*      and your specific configuration...
-*
-*******************************************************************************/
 #ifndef MB_DEFS_H
 #define MB_DEFS_H
 

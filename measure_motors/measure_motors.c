@@ -1,17 +1,3 @@
-/*******************************************************************************
-* measure_motors.c
-*
-* Use this template to write data to a file for analysis in Python or Matlab
-* to determine the parameters for your motors
-*
-* TODO: Option A: Capture encoder readings, current readings, timestamps etc. 
-*       to a file to analyze and determine motor parameters
-*       
-*       Option B: Capture the same information within get_motor_params and follow
-*       on its structure for obtaining the parameters and printing them in your
-*       terminal.
-*
-*******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -28,11 +14,6 @@
 #include "../common/mb_defs.h"
 
 FILE* f1;
-
-/*******************************************************************************
-* int main() 
-*
-*******************************************************************************/
 
 int get_motor_params(int motor, int polarity, float resistance, float dtime_s);
 
@@ -81,30 +62,11 @@ int main(){
 
     rc_set_state(RUNNING);
 
-    /**********************************************************************
-    [OPTION A] TODO : Loop and Save data to a file and migrate that info
-                      to python or matlab
-    
-    while(rc_get_state()!=EXITING){
-        rc_nanosleep(1E9);
-        //get data
-        //save to file
-    }
-    // close file    
-    **********************************************************************/
-    
-    /**********************************************************************
-    [OPTION B] TODO : Follow on the guide within get_motor_params and 
-                      construct it accordingly. Then run it for each motor
-                      given you know its resistance.*/
-
     int pass_mot1, pass_mot2;
     float dtime_s = 5;  // 5sec is usuall enough but you can change
     pass_mot1 = get_motor_params(RIGHT_MOTOR, MOT_1_POL, RESISTANCE_RIGHT, dtime_s);
     rc_nanosleep(5E9);
     pass_mot2 = get_motor_params(LEFT_MOTOR, MOT_2_POL, RESISTANCE_LEFT, dtime_s);
-    /***********************************************************************/
-
 
     // exit cleanly
     rc_adc_cleanup();
@@ -112,9 +74,6 @@ int main(){
     rc_remove_pid_file();   // remove pid file LAST
     return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// [OPTION B] TODO : Fill in get_motor_params to obtain motor parameters
 
 int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
 
@@ -142,8 +101,6 @@ int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
     rc_encoder_write(motor, 0);             // Reset the enocder
     mb_motor_set(motor, duty);              // Command the duty cycle we provided
     rc_nanosleep(5E9);                      // Sleep for 5s [changeable] to guarantee we reach steady state
-
-    // TODO: Steady State measurements and calculations
     
     encoder_ticks = polarity * rc_encoder_eqep_read(motor);                     // Get your encoder counts accumulated for 5s
     noload_speed = encoder_ticks * (2.0*3.14) / (GEAR_RATIO * ENCODER_RES) / 5.0;                      // Use your accumulated encoder counts + sleep time to get a noload speed measurement
@@ -153,19 +110,15 @@ int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
         noload_current = rc_adc_read_volt(MOT_2_CS) / 0.5;
     }
 
-
     // Things you would be able to calculate from the three recorded values above
     mot_constant = (12.0*duty - noload_current * resistance) / noload_speed;
     stall_torque = mot_constant * 12.0 * duty / resistance;                      
     shaft_fric = (mot_constant * 12 * duty - mot_constant * mot_constant * noload_speed) / (noload_speed * resistance);
 
-    
-
     // Turn off the motor after steady state calcs are done
     mb_motor_set(motor, 0.0);
     rc_nanosleep(2E9);
 
-    // TODO: Transient State measurements and calculations
     rc_encoder_write(motor, 0);             // Reset the encoder
     mb_motor_set(motor, duty);              // Set the motor again at max dc
 
@@ -179,15 +132,11 @@ int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
 
     // Our while loop termination condition is the max run time dtime_s we provide as an argument to the function
     while(time_elapse < dtime_s){
-
-        
         time_elapse = (double)(rc_nanos_since_epoch())*1.0E-9 - start_time;
         dt = time_elapse - dtime_s;
         prevtime = (double)(rc_nanos_since_epoch())*1.0E-9 - start_time;
         encoder_ticks = polarity * rc_encoder_eqep_read(motor);
         speed = encoder_ticks * (2.0*3.14) / (GEAR_RATIO * ENCODER_RES) / dt;
-        
-
         if(!got_time_const && speed > (0.63 * noload_speed) ){
             printf("Got time constant\n");
             got_time_const = 1;
@@ -195,7 +144,6 @@ int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
         }
         rc_nanosleep(1E7);
     }
-
 
      shaft_inertia = shaft_fric * time_const;
      mb_motor_set(motor, 0.0);
@@ -207,4 +155,3 @@ int get_motor_params(int motor, int polarity, float resistance, float dtime_s){
 
     return pass_flag;
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
