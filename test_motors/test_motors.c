@@ -115,13 +115,6 @@ int main(int argc, char** argv){
         }
         printf("Encoder Reads Right BKWD\n\n");
         rc_nanosleep(3E9);
-
-        //////////////////////////////////////////////
-        // [OPTIONAL] TODO: Incorporate test_motor_dir
-        //
-        //
-        //
-        //////////////////////////////////////////////
         
         printf("Motors passed all tests.\n");
 
@@ -159,12 +152,6 @@ int test_motor_duty(int motor, int polarity, float duty, float dtime_s){
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// [OPTIONAL] TODO : Incorporate this function in the test motors
-//
-//
-// Function to test direction that you could add to the script. It will test that the signs of the obtained speeds
-// given the specified polarities in mb_defs.h match.
 int test_motor_dir(float duty, float dtime_s){
 
     int left_encoder, right_encoder;
@@ -190,4 +177,3 @@ int test_motor_dir(float duty, float dtime_s){
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

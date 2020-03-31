@@ -1,15 +1,8 @@
-/*******************************************************************************
-* mb_defs.h
-*
-*   defines for your bot
-*   You will need to fill this in based on the data sheets, schematics, etc. 
-*      and your specific configuration...
-* 
-*******************************************************************************/
 #ifndef MB_DEFS_H
 #define MB_DEFS_H
 
 #define CFG_PATH "../common/pid.csv"
+#define CFG_PATH_NEW "../common/pidhigh.csv"
 
 #define DEFAULT_PWM_FREQ        25000 // period of motor drive pwm
 #define LEFT_MOTOR                  1 // id of left motor

@@ -8,12 +8,12 @@
 
 int mb_controller_init();
 int mb_controller_load_config();
-int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints);
+int mb_controller_update(mb_state_t* mb_state, mb_setpoints_t* mb_setpoints, rc_mpu_data_t* mpu_data);
 int mb_controller_cleanup();
 
 #define DT 0.01
 #define SOFT_START_SEC 0.7
-#define THETA_REF_MAX 0.33
+#define THETA_REF_MAX 0.2
 #define STEERING_INPUT_MAX 0.5
 
 
@@ -24,8 +24,14 @@ int mb_controller_cleanup();
 #define DSM_TURN_CH			4
 #define DSM_MANUAL_CTL_CH   5
 #define DSM_DEAD_ZONE		0.04
-#define DRIVE_RATE_NOVICE   8
-#define TURN_RATE_NOVICE 	3
+#define DRIVE_RATE_NOVICE   27
+#define TURN_RATE_NOVICE 	4
+
+//For the controllers
+#define D1_NUM_LEN 3
+#define D1_DEN_LEN 3
+
+#define D2_NUM_LEN 3
+#define D2_DEN_LEN 3
 
 #endif
-

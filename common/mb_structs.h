@@ -20,9 +20,10 @@ struct mb_state{
     float opti_pitch;
     float opti_yaw;
 
-    //TODO: Add more variables to this state as needed
     float wheelAngleR;
     float wheelAngleL;
+    float wheelVelR;
+    float wheelVelL;
     float d1_u;
     float d2_u;  //duty for outer loop
     float d3_u;  //duty for steering
@@ -48,6 +49,9 @@ struct mb_odometry{
     float x;        //x position from initialization in m
     float y;        //y position from initialization in m
     float psi;      //orientation from initialization in rad
+    float left_last_angle;
+    float right_last_angle;
+    float last_yaw;
 };
 
 #endif
