@@ -48,5 +48,5 @@ Source code for The Robot Control Library is in the folder `~/Install/librobotco
 Check out the [final report](https://github.com/saptadeb/balanceBot/blob/master/05-balancebot-w20.pdf) for more information and results.
 
 ### Collaborators
-[Shreyas Bhat]() and [Saptadeep Debnath](https://www.linkedin.com/in/saptadeep-deb/)
+[Shreyas Bhat](https://www.linkedin.com/in/shreyas-bhat-42a07410a/) and [Saptadeep Debnath](https://www.linkedin.com/in/saptadeep-deb/)
 
