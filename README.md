@@ -1,15 +1,15 @@
 # Mobile Inverted Pendulum System
 
 A project for ROB 550: Robotics Systems Lab course taught in University of Michigan, Ann Arbor. An overview of this project:
-##### Acting
+#### Acting
 - Dynamic control of DC motors to balance and control a wheeled inverted pendulum
 - Trajectory Following for a mobile robot
 
-##### Sensing 
+#### Sensing 
 - Use of wheel encoders for performing odometry
 - Use of MEMS IMU sensors to determine orientation (heading, pitch angle)
 
-##### Design
+#### Design
 - Build a system from the ground up based on an embedded system
 - Use of Beaglebone with Robot Control Library in C for soft real-time control
 
