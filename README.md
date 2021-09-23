@@ -1,5 +1,7 @@
 # Mobile Inverted Pendulum System
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a79f1d99505490280e4b51001f26184)](https://www.codacy.com/gh/saptadeb/balanceBot/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=saptadeb/balanceBot&amp;utm_campaign=Badge_Grade)
+
 A project for ROB 550: Robotics Systems Lab course taught in University of Michigan, Ann Arbor. An overview of this project:
 #### Acting
 - Dynamic control of DC motors to balance and control a wheeled inverted pendulum
